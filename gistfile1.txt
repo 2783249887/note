@@ -1,0 +1,20 @@
+原型链：实现继承的主要方法。其基本思想是利用原型让一个引用类型继承另一个引用类型的属性和方法。在JavaScript中，用 __proto__ 属性来表示一个对象的原型链。当查找一个对象的属性时，JavaScript 会向上遍历原型链，直到找到给定名称的属性为止！
+每个对象都会在其内部初始化一个属性，就是 __proto__，当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么他就会去__proto__里找这个属性，这个 __proto__又会有自己的__proto__，于是就这样一直找下去，也就是我们平时所说的原型链的概念。
+var Person = function () { };
+    Person.prototype.Say = function () {
+      alert("Person say");
+    }
+    Person.prototype.Salary = 50000;
+    var Programmer = function () { };
+    Programmer.prototype = new Person();//让程序员类从人这个类继承
+    Programmer.prototype.WriteCode = function () {
+      alert("programmer writes code");
+    };
+    Programmer.prototype.Salary = 500;
+    var p = new Programmer();
+    p.Say();
+    p.WriteCode();
+    alert(p.Salary);
+    
+    由于p没有Say这个属性，于是去 p.__proto__，也就是Programmer.prototype，也就是p1中去找，由于p1中也没有Say，那就去 p.__proto__.__proto__，也就是Person.prototype中去找，于是就找到了Say方法。这也就是原型链的实现原理。
+    其实prototype只是一个假象，他在实现原型链中只是起到了一个辅助作用，换句话说，他只是在new的时候有着一定的价值，而原型链的本质，其实在于__proto__。
