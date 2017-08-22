@@ -1,0 +1,115 @@
+1.原型链
+function father() {  
+            this.faName = 'father';  
+        }  
+        father.prototype.getfaName = function() {  
+            console.log(this.faName);  
+        };  
+        function child() {  
+            this.chName = 'child';  
+        }  
+        child.prototype = new father();  
+        child.prototype.constructor = child;  
+        child.prototype.getchName = function() {  
+            console.log(this.chName);  
+        };  
+        /* 
+        缺点：1.重写子类的原型 等于 父类的一个实例，（父类的实例属相变成子类的原型属性）如果父类包含引用类型的属性，那么子类所有实例都会共享该属性 
+                （包含引用类型的*原型*属性会被实例共享） 
+              2.在创建子类实例时，不能向父类的构造函数传递参数
+2.构造函数继承
+解决引用共享和超类型无法传参的问题
+function Box(age){
+this.name=['Lee','Jack','Hello']
+this.age=age;
+}
+function Desk(age){
+Box.call(this,age); //对象冒充，给超类型传参
+}
+var desk = new Desk(200);
+alert(desk.age);//200
+alert(desk.name);//['Lee','Jack','Hello']
+desk.name.push('AAA'); //添加的新数据，只给 desk
+alert(desk.name)//['Lee','Jack','Hello','AAA']
+3.原型连继承和借用构造函数 组合实现继承 （组合继承解决原型链继承的引用类型原型属性被实例共享问题）  
+        function father(name) {  
+            this.faName = 'father';  
+        }  
+        father.prototype.getfaName = function() {  
+            console.log(this.faName);  
+        };  
+        function child(args) {  
+            this.chName = 'child';  
+            father.apply(this,[]); //第二次调用父类构造函数  
+        }  
+        child.prototype = new father(); //第一次调用父类构造函数  
+        child.prototype.constructor = child;  
+        child.prototype.getchName = function() {  
+            console.log(this.chName);  
+        };  
+        /* 
+        缺点：两次调用父类构造函数：（第一次是在创建子类原型的时候，第二次是在子类构造函数内部） 
+              子类继承父类的属性，一组在子类实例上，一组在子类原型上（在子类原型上创建不必要的多余的属性）（实例上的屏蔽原型上的同名属性） 
+              效率低 
+ 4.原型式继承
+ 这种继承借助原型并基于已有的对象创建新对象，
+同时还不必因此创建自定义类型 
+
+function obj(o) { //传递一个字面量函数
+function F() {} //创建一个构造函数
+F.prototype = o; //把字面量函数赋值给构造函数的原型
+return new F(); //最终返回出实例化的构造函数
+}
+var box = { //字面量对象
+name : 'Lee',
+arr : ['哥哥','妹妹','姐姐']
+};
+var box1 = obj(box); //传递
+alert(box1.name);
+box1.name = 'Jack';
+alert(box1.name);
+alert(box1.arr);
+box1.arr.push('父母');
+alert(box1.arr);
+var box2 = obj(box); //传递
+alert(box2.name);
+alert(box2.arr); //引用类型共享了
+ 5.寄生组合继承  
+        /** 
+         * 创建一个拥有指定原型的对象 与Object.create()方法类似 
+         * @param  {Object} o [description] 
+         */  
+        function object(o) {  
+            function F() {};  
+            F.prototype = o;  
+            return new F();  
+        }  
+        /** 
+         * 通用方法实现子类继承父类 
+         * @param  {function} child  子类构造函数 
+         * @param  {function} father 被继承的父类构造函数 
+         */  
+        function inheritPrototype(child, father) {  
+            var prototype = object(father.prototype); //创建一个指定原型的对象  
+            prototype.constructor = child; //增强对象  
+            child.prototype = prototype; //子类的原型等于该对象  
+        }  
+        function father(name) {  
+            this.faName = 'father';  
+        }  
+        father.prototype.getfaName = function() {  
+            console.log(this.faName);  
+        };  
+        function child(args) {  
+            this.chName = 'child';  
+            father.apply(this,[]);  
+        }  
+        inheritPrototype(child, father); //子类的原型等于new 空函数(), 而new 空函数()出来的对象的原型等于父类的原型  
+        child.prototype.getchName = function() {  
+            console.log(this.chName);  
+        };  
+        console.log( child.prototype.isPrototypeOf(new child()) ); //true  
+        console.log(new child() instanceof child); //true  
+        /* 
+        优点：1.只调用一次父类的构造函数,避免了在子类原型上创建不必要的，多余的属性 
+              2.原型链保持不变 
